@@ -1,0 +1,85 @@
+{
+  "name": "llm-budget-cap",
+  "version": "0.2.0",
+  "description": "Atomic Redis spend/usage cap for LLM (OpenAI, Gemini, …) APIs — one Lua-atomic INCR+PEXPIRE so a bug or abuse can't blow up your bill.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "redis",
+    "rate-limit",
+    "rate-limiter",
+    "llm",
+    "openai",
+    "gemini",
+    "anthropic",
+    "cost-control",
+    "budget",
+    "spend-limit",
+    "atomic",
+    "lua",
+    "ioredis"
+  ],
+  "author": "Alejandro Rentheria (Rentheria)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rentheria/llm-budget-cap.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Rentheria/llm-budget-cap/issues"
+  },
+  "homepage": "https://github.com/Rentheria/llm-budget-cap#readme",
+  "peerDependencies": {
+    "ioredis": ">=5"
+  },
+  "peerDependenciesMeta": {
+    "ioredis": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.17.0",
+    "ioredis": "^5.4.2",
+    "prettier": "^3.4.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.0",
+    "vitest": "^3.0.0"
+  }
+}
