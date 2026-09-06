@@ -1,5 +1,10 @@
 # llm-budget-cap
 
+[![CI](https://github.com/Rentheria/llm-budget-cap/actions/workflows/ci.yml/badge.svg)](https://github.com/Rentheria/llm-budget-cap/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/llm-budget-cap.svg)](https://www.npmjs.com/package/llm-budget-cap)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org/)
+
 *[English](README.md)*
 
 **Tope de gasto atómico en Redis para APIs de LLM (OpenAI, Gemini, Anthropic, …).**
@@ -260,6 +265,16 @@ Los tests de atomicidad necesitan un Redis real (`REDIS_URL`, default `redis://1
 
 ```bash
 docker run --rm -p 6399:6379 redis:7-alpine
+```
+
+### Reproducir el PoC
+
+El directorio `docs/poc/` contiene scripts de prueba de concepto que demuestran las mejoras en 0.2.0. Construye el paquete primero, luego ejecuta:
+
+```bash
+npm run build
+npm run poc:overspend  # Muestra el patrón de 0.1.0 permitiendo 20× sobregasto
+npm run poc:timeout    # Muestra la protección de timeout evitando cuelgues
 ```
 
 ---
