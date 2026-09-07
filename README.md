@@ -8,6 +8,8 @@
 *[Español](README.es.md)*
 
 **Atomic Redis spend cap for LLM APIs (OpenAI, Gemini, Anthropic, …).**
+
+> **See also:** [chatarmor](https://github.com/Rentheria/chatarmor) — conversational AI safety toolkit.
 An `INCR` + `PEXPIRE` counter that runs **entirely inside a single Lua script**, so a bug or abuse can't quietly bleed money out of your AI API bill.
 
 - ⚛️ **Truly atomic.** Increment + TTL-arm in one Lua execution: two near-simultaneous requests near the limit **cannot both slip through**. A `GET` + `SET` can (explained below).
@@ -225,6 +227,15 @@ The counter lives **only in Redis**, so the cap is **best-effort** against anyth
 - The cap does **not** survive `FLUSHALL`, eviction, or an async-replica failover that loses unreplicated increments. Treat it as a safety net, not an accounting ledger. If you need exact spend accounting, record it in your database; this is the cheap ceiling in front of it.
 - Give the key an **app/env prefix** (`key: 'myapp:prod:gemini:daily'`) so it can't collide with another counter on a shared Redis.
 
+### Production checklist
+
+Before deploying:
+
+1. **Alert on degraded mode.** Pass `onDegraded` to log/metric/alert whenever a Redis failure triggers fail-open. A silent degraded cap is a cap that isn't there.
+2. **Review fail-open strategy.** The default (`failOpen: true`) lets requests through when Redis fails — you'd rather have a paid feature go unmetered briefly than take it down entirely. If your use case demands a hard boundary, set `failOpen: false` and handle the thrown `BudgetCapError`.
+3. **Check ioredis timeouts.** Set `enableOfflineQueue: false` and `maxRetriesPerRequest: 2` so a dead Redis errors immediately instead of queueing or retrying indefinitely.
+4. **Verify `REDIS_URL`.** Local development typically uses port **6399** (`redis://127.0.0.1:6399`), while CI/production usually use **6379**. Set the environment variable explicitly to avoid confusion.
+
 ---
 
 ## Migrating from 0.1.0
@@ -261,10 +272,14 @@ npm test            # Vitest, single worker; atomicity tests use real Redis
 npm run build       # tsup → ESM + CJS + types
 ```
 
-The atomicity tests need a real Redis (`REDIS_URL`, default `redis://127.0.0.1:6399`):
+The atomicity tests need a real Redis. By default, tests connect to `redis://127.0.0.1:6399` (local Docker on port **6399**), while CI uses port **6379**. Override with `REDIS_URL`:
 
 ```bash
+# Local testing (recommended port to avoid CI collision)
 docker run --rm -p 6399:6379 redis:7-alpine
+
+# Or override to CI's default:
+REDIS_URL=redis://127.0.0.1:6379 npm test
 ```
 
 ### Reproduce the PoC
@@ -276,6 +291,14 @@ npm run build
 npm run poc:overspend  # Shows the 0.1.0 pattern allowing 20× overspend
 npm run poc:timeout    # Shows timeout protection preventing hangs
 ```
+
+---
+
+## Project Links
+
+- **npm:** [llm-budget-cap](https://www.npmjs.com/package/llm-budget-cap)
+- **Repository:** [github.com/Rentheria/llm-budget-cap](https://github.com/Rentheria/llm-budget-cap)
+- **Homepage:** View the [README](https://github.com/Rentheria/llm-budget-cap#readme) or set a custom homepage URL in the repository settings if needed.
 
 ---
 

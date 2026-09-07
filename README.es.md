@@ -8,6 +8,8 @@
 *[English](README.md)*
 
 **Tope de gasto atómico en Redis para APIs de LLM (OpenAI, Gemini, Anthropic, …).**
+
+> **Ver también:** [chatarmor](https://github.com/Rentheria/chatarmor) — kit de seguridad para IA conversacional.
 Un contador `INCR` + `PEXPIRE` que corre **entero dentro de un solo script de Lua**, para que un bug o un abuso no te desangren silenciosamente la factura de tu API de IA.
 
 - ⚛️ **Realmente atómico.** Incremento + armado de TTL en una sola ejecución de Lua: dos requests casi simultáneos cerca del límite **no pueden pasar los dos**. Un `GET` + `SET` sí (explicado abajo).
@@ -225,6 +227,15 @@ El contador vive **solo en Redis**, así que el tope es **best-effort** contra c
 - El tope **no** sobrevive a `FLUSHALL`, eviction, ni a un failover de réplica asíncrona que pierda incrementos no replicados. Trátalo como red de seguridad, no como libro contable. Si necesitas contabilidad exacta del gasto, regístrala en tu base de datos; esto es el techo barato enfrente.
 - Dale a la key un **prefijo de app/env** (`key: 'myapp:prod:gemini:daily'`) para que no colisione con otro contador en un Redis compartido.
 
+### Checklist de producción
+
+Antes de desplegar:
+
+1. **Alerta sobre modo degradado.** Pasa `onDegraded` para loguear/medir/alertar cuando una falla de Redis dispara fail-open. Un tope degradado en silencio es un tope que no está.
+2. **Revisa la estrategia fail-open.** Por defecto (`failOpen: true`) deja pasar requests cuando Redis falla — preferirías que una feature de pago quede sin medir brevemente a tumbarla por completo. Si tu caso demanda una frontera dura, pon `failOpen: false` y maneja el `BudgetCapError` lanzado.
+3. **Chequea los timeouts de ioredis.** Pon `enableOfflineQueue: false` y `maxRetriesPerRequest: 2` para que Redis caído dé error inmediato en vez de encolar o reintentar indefinidamente.
+4. **Verifica `REDIS_URL`.** Desarrollo local típicamente usa el puerto **6399** (`redis://127.0.0.1:6399`), mientras CI/producción usan **6379**. Ponlo explícito en la variable de entorno para evitar confusión.
+
 ---
 
 ## Migrar desde 0.1.0
@@ -261,10 +272,14 @@ npm test            # Vitest, un solo worker; los tests de atomicidad usan Redis
 npm run build       # tsup → ESM + CJS + tipos
 ```
 
-Los tests de atomicidad necesitan un Redis real (`REDIS_URL`, default `redis://127.0.0.1:6399`):
+Los tests de atomicidad necesitan un Redis real. Por defecto, los tests se conectan a `redis://127.0.0.1:6399` (Docker local en el puerto **6399**), mientras CI usa el puerto **6379**. Sobrescribe con `REDIS_URL`:
 
 ```bash
+# Testing local (puerto recomendado para evitar colisión con CI)
 docker run --rm -p 6399:6379 redis:7-alpine
+
+# O sobrescribe al default de CI:
+REDIS_URL=redis://127.0.0.1:6379 npm test
 ```
 
 ### Reproducir el PoC
@@ -276,6 +291,14 @@ npm run build
 npm run poc:overspend  # Muestra el patrón de 0.1.0 permitiendo 20× sobregasto
 npm run poc:timeout    # Muestra la protección de timeout evitando cuelgues
 ```
+
+---
+
+## Enlaces del proyecto
+
+- **npm:** [llm-budget-cap](https://www.npmjs.com/package/llm-budget-cap)
+- **Repositorio:** [github.com/Rentheria/llm-budget-cap](https://github.com/Rentheria/llm-budget-cap)
+- **Homepage:** Ve el [README](https://github.com/Rentheria/llm-budget-cap#readme) o pon una URL de homepage personalizada en la configuración del repositorio si es necesario.
 
 ---
 
