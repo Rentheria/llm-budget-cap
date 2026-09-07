@@ -154,7 +154,12 @@ describe('BudgetCap — atomicidad contra Redis real', () => {
 
   it('debería_reembolsar_el_estimado_no_usado_al_liquidar_contra_Redis_real', async () => {
     const key = 'llm-budget-cap:test:settle';
-    const cap = new BudgetCap({ redis: connect(), key, limit: 1000, windowMs: 60_000 });
+    const cap = new BudgetCap({
+      redis: connect(),
+      key,
+      limit: 1000,
+      windowMs: 60_000,
+    });
 
     const reservation = await cap.reserve(undefined, 400);
     expect(await main.get(key)).toBe('400');

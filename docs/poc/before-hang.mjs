@@ -23,14 +23,21 @@ const decision = await Promise.race([
 ]);
 
 const elapsed = Date.now() - started;
-console.log(JSON.stringify({
-  patron: 'README 0.1.0 (new Redis(url), defaults)',
-  outcome: decision.kind,
-  elapsedMs: elapsed,
-  note: decision.kind === 'still-hanging'
-    ? `SIGUE COLGADO tras ${HARD_CAP_MS}ms — failOpen nunca se disparó`
-    : JSON.stringify(decision.d),
-}, null, 2));
+console.log(
+  JSON.stringify(
+    {
+      patron: 'README 0.1.0 (new Redis(url), defaults)',
+      outcome: decision.kind,
+      elapsedMs: elapsed,
+      note:
+        decision.kind === 'still-hanging'
+          ? `SIGUE COLGADO tras ${HARD_CAP_MS}ms — failOpen nunca se disparó`
+          : JSON.stringify(decision.d),
+    },
+    null,
+    2,
+  ),
+);
 
 redis.disconnect();
 process.exit(0);

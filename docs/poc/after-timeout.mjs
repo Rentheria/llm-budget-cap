@@ -9,18 +9,29 @@ const redis = new Redis(DEAD_URL); // defaults del README: enableOfflineQueue:tr
 redis.on('error', () => {});
 
 // timeoutMs default es 5000; lo bajamos a 800 para el demo.
-const cap = new BudgetCap({ redis, key: 'poc:timeout', limit: 500, timeoutMs: 800 });
+const cap = new BudgetCap({
+  redis,
+  key: 'poc:timeout',
+  limit: 500,
+  timeoutMs: 800,
+});
 
 const started = Date.now();
 const decision = await cap.checkAndIncrement();
 const elapsed = Date.now() - started;
 
-console.log(JSON.stringify({
-  patron: 'README 0.2.0 (new Redis(url) defaults + timeoutMs:800)',
-  elapsedMs: elapsed,
-  decidedWithinTimeout: elapsed < 2000,
-  decision,
-}, null, 2));
+console.log(
+  JSON.stringify(
+    {
+      patron: 'README 0.2.0 (new Redis(url) defaults + timeoutMs:800)',
+      elapsedMs: elapsed,
+      decidedWithinTimeout: elapsed < 2000,
+      decision,
+    },
+    null,
+    2,
+  ),
+);
 
 redis.disconnect();
 process.exit(0);

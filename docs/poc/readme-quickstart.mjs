@@ -37,19 +37,23 @@ async function handleRequest() {
 }
 
 // 20 requests concurrentes contra un presupuesto de 1000 tokens (2.5 llamadas).
-const responses = await Promise.all(
-  Array.from({ length: 20 }, handleRequest),
-);
+const responses = await Promise.all(Array.from({ length: 20 }, handleRequest));
 const ok = responses.filter((r) => r.status === 200).length;
 const capped = responses.filter((r) => r.status === 429).length;
 
-console.log(JSON.stringify({
-  limit: 1000,
-  concurrentRequests: 20,
-  paidCallsMade: ok,
-  cappedWith429: capped,
-  realTokensBilled,
-  withinBudget: realTokensBilled <= 1000,
-}, null, 2));
+console.log(
+  JSON.stringify(
+    {
+      limit: 1000,
+      concurrentRequests: 20,
+      paidCallsMade: ok,
+      cappedWith429: capped,
+      realTokensBilled,
+      withinBudget: realTokensBilled <= 1000,
+    },
+    null,
+    2,
+  ),
+);
 
 await redis.quit();

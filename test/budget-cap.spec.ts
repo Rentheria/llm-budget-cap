@@ -328,7 +328,11 @@ describe('BudgetCap.reserve + settle', () => {
   });
 
   it('debería_ser_no_op_al_liquidar_una_reserva_degradada', async () => {
-    const cap = new BudgetCap({ redis: new FailingRedis(), key: 'x', limit: 1 });
+    const cap = new BudgetCap({
+      redis: new FailingRedis(),
+      key: 'x',
+      limit: 1,
+    });
 
     const reservation = await cap.reserve(undefined, 5);
     expect(reservation.degraded).toBe(true);

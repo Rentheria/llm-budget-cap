@@ -153,10 +153,7 @@ export class BudgetCap {
    *   the typical real cost so the cap errs on the safe side between reserve and
    *   settle.
    */
-  async reserve(
-    subKey?: string,
-    estimate = 1,
-  ): Promise<BudgetCapReservation> {
+  async reserve(subKey?: string, estimate = 1): Promise<BudgetCapReservation> {
     validateAmount(estimate, 'estimate');
     const decision = await this.increment(this.buildKey(subKey), estimate);
     return { ...decision, subKey, reserved: estimate };
