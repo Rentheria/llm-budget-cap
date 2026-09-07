@@ -12,7 +12,12 @@ const LIMIT = 1000;
 const CONCURRENCY = 50;
 const TOKENS_PER_CALL = 400;
 
-const cap = new BudgetCap({ redis, key: 'poc:after', limit: LIMIT, windowMs: 60_000 });
+const cap = new BudgetCap({
+  redis,
+  key: 'poc:after',
+  limit: LIMIT,
+  windowMs: 60_000,
+});
 
 let tokensReallySpent = 0;
 let paidCalls = 0;
@@ -35,16 +40,22 @@ async function handler() {
 const results = await Promise.all(Array.from({ length: CONCURRENCY }, handler));
 const allowed = results.filter(Boolean).length;
 
-console.log(JSON.stringify({
-  patron: 'README 0.2.0 (reserve-first, settle-after)',
-  limit: LIMIT,
-  concurrency: CONCURRENCY,
-  tokensPerCall: TOKENS_PER_CALL,
-  paidCalls,
-  tokensReallySpent,
-  overBudgetFactor: +(tokensReallySpent / LIMIT).toFixed(2),
-  withinBudget: tokensReallySpent <= LIMIT,
-  paidCallsAllowed: allowed,
-}, null, 2));
+console.log(
+  JSON.stringify(
+    {
+      patron: 'README 0.2.0 (reserve-first, settle-after)',
+      limit: LIMIT,
+      concurrency: CONCURRENCY,
+      tokensPerCall: TOKENS_PER_CALL,
+      paidCalls,
+      tokensReallySpent,
+      overBudgetFactor: +(tokensReallySpent / LIMIT).toFixed(2),
+      withinBudget: tokensReallySpent <= LIMIT,
+      paidCallsAllowed: allowed,
+    },
+    null,
+    2,
+  ),
+);
 
 await redis.quit();

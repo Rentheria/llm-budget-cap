@@ -5,12 +5,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org/)
 
-*[English](README.md)*
+_[English](README.md)_
 
 **Tope de gasto atómico en Redis para APIs de LLM (OpenAI, Gemini, Anthropic, …).**
 
 > **Ver también:** [chatarmor](https://github.com/Rentheria/chatarmor) — kit de seguridad para IA conversacional.
-Un contador `INCR` + `PEXPIRE` que corre **entero dentro de un solo script de Lua**, para que un bug o un abuso no te desangren silenciosamente la factura de tu API de IA.
+> Un contador `INCR` + `PEXPIRE` que corre **entero dentro de un solo script de Lua**, para que un bug o un abuso no te desangren silenciosamente la factura de tu API de IA.
 
 - ⚛️ **Realmente atómico.** Incremento + armado de TTL en una sola ejecución de Lua: dos requests casi simultáneos cerca del límite **no pueden pasar los dos**. Un `GET` + `SET` sí (explicado abajo).
 - 🧮 **Reserve → settle para un tope de gasto real.** Reserva un estimado **antes** de la llamada de pago (eso es lo que topa), y liquida con el costo real después (devuelve el estimado no usado, o cobra el excedente). La decisión ocurre **antes** de que se gaste el dinero.
@@ -51,7 +51,7 @@ import Redis from 'ioredis';
 
 const redis = new Redis(process.env.REDIS_URL, {
   enableOfflineQueue: false, // Redis caído ⇒ error inmediato, no cola infinita
-  maxRetriesPerRequest: 2,   // no colgar el request path reintentando un server caído
+  maxRetriesPerRequest: 2, // no colgar el request path reintentando un server caído
 });
 ```
 
@@ -161,15 +161,15 @@ Cada `checkAndIncrement`/`reserve` obtiene un `current` único y creciente, y el
 
 ### `new BudgetCap(options)`
 
-| Opción       | Tipo                        | Default            | Descripción                                                                                  |
-| ------------ | --------------------------- | ------------------ | -------------------------------------------------------------------------------------------- |
-| `redis`      | `RedisEvalClient`           | —                  | Cliente compatible con ioredis (`eval(script, numKeys, ...args)`).                            |
-| `key`        | `string`                    | —                  | Key base del contador. Con un `subKey` se combina como `key:subKey`.                          |
-| `limit`      | `number`                    | —                  | Gasto/uso máximo permitido por ventana (entero 1…`Number.MAX_SAFE_INTEGER`).                  |
-| `windowMs`   | `number`                    | `86_400_000` (24h) | Largo de la ventana fija en ms, contado desde el primer hit.                                  |
-| `failOpen`   | `boolean`                   | `true`             | Si Redis falla/expira, ¿dejar pasar la operación (degradado) o lanzar?                        |
-| `timeoutMs`  | `number`                    | `5000`             | Timeout duro por llamada a Redis. Si Redis no responde a tiempo, decide `failOpen`. `0` = off.|
-| `onDegraded` | `(error: unknown) => void`  | —                  | Se llama con el error cada vez que una llamada degrada (fail-open). Alerta/mide aquí.         |
+| Opción       | Tipo                       | Default            | Descripción                                                                                    |
+| ------------ | -------------------------- | ------------------ | ---------------------------------------------------------------------------------------------- |
+| `redis`      | `RedisEvalClient`          | —                  | Cliente compatible con ioredis (`eval(script, numKeys, ...args)`).                             |
+| `key`        | `string`                   | —                  | Key base del contador. Con un `subKey` se combina como `key:subKey`.                           |
+| `limit`      | `number`                   | —                  | Gasto/uso máximo permitido por ventana (entero 1…`Number.MAX_SAFE_INTEGER`).                   |
+| `windowMs`   | `number`                   | `86_400_000` (24h) | Largo de la ventana fija en ms, contado desde el primer hit.                                   |
+| `failOpen`   | `boolean`                  | `true`             | Si Redis falla/expira, ¿dejar pasar la operación (degradado) o lanzar?                         |
+| `timeoutMs`  | `number`                   | `5000`             | Timeout duro por llamada a Redis. Si Redis no responde a tiempo, decide `failOpen`. `0` = off. |
+| `onDegraded` | `(error: unknown) => void` | —                  | Se llama con el error cada vez que una llamada degrada (fail-open). Alerta/mide aquí.          |
 
 ### `checkAndIncrement(subKey?, amount?)` → `Promise<BudgetCapDecision>`
 
@@ -185,16 +185,16 @@ Aplica `realCost - reserved` al mismo contador atómicamente (reembolso o excede
 
 ```ts
 interface BudgetCapDecision {
-  allowed: boolean;   // true si puedes proceder (count <= limit)
-  count: number;      // valor del contador DESPUÉS de esta operación (0 si degradado)
-  limit: number;      // el límite configurado
-  remaining: number;  // gasto restante: max(0, limit - count)
-  degraded: boolean;  // true si Redis falló/expiró y esto es un fallback fail-open
+  allowed: boolean; // true si puedes proceder (count <= limit)
+  count: number; // valor del contador DESPUÉS de esta operación (0 si degradado)
+  limit: number; // el límite configurado
+  remaining: number; // gasto restante: max(0, limit - count)
+  degraded: boolean; // true si Redis falló/expiró y esto es un fallback fail-open
 }
 
 interface BudgetCapReservation extends BudgetCapDecision {
   subKey: string | undefined; // para settle
-  reserved: number;           // para settle
+  reserved: number; // para settle
 }
 ```
 
@@ -245,8 +245,13 @@ Antes de desplegar:
 ```ts
 // ❌ 0.1.0 — la decisión llega DESPUÉS de que el dinero se gastó.
 const response = await callGemini(userMessage);
-const decision = await cap.checkAndIncrement(undefined, response.usage.totalTokens);
-if (!decision.allowed) { /* demasiado tarde — la llamada ya ocurrió */ }
+const decision = await cap.checkAndIncrement(
+  undefined,
+  response.usage.totalTokens,
+);
+if (!decision.allowed) {
+  /* demasiado tarde — la llamada ya ocurrió */
+}
 ```
 
 Bajo concurrencia esto dejaba el gasto pasarse muy por encima del límite (medido: `limit=1000`, 50 llamadas concurrentes de 400 tokens → **20,000 tokens gastados, 20×** el presupuesto). Reemplázalo por `reserve` + `settle` (ver [arriba](#2-un-tope-de-gasto-real-en-tokenscentavos-amount-conocido-solo-después-de-la-llamada)) — el mismo escenario ahora queda **dentro del presupuesto**.
