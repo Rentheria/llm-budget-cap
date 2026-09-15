@@ -9,7 +9,7 @@ _[English](README.md)_
 
 **Tope de gasto atómico en Redis para APIs de LLM (OpenAI, Gemini, Anthropic, …).**
 
-> **Ver también:** [chatarmor](https://github.com/Rentheria/chatarmor) — kit de seguridad para IA conversacional.
+> **Ver también:** [chatarmor](https://github.com/Rentheria/chatarmor) — kit de seguridad para IA conversacional. [agent-context-atlas](https://github.com/Rentheria/agent-context-atlas) — wiki + grafo tipado + RAG híbrido para contexto de agentes/máquinas; complementario al tope de gasto (contexto vs gasto).
 > Un contador `INCR` + `PEXPIRE` que corre **entero dentro de un solo script de Lua**, para que un bug o un abuso no te desangren silenciosamente la factura de tu API de IA.
 
 - ⚛️ **Realmente atómico.** Incremento + armado de TTL en una sola ejecución de Lua: dos requests casi simultáneos cerca del límite **no pueden pasar los dos**. Un `GET` + `SET` sí (explicado abajo).
