@@ -9,7 +9,7 @@ _[Español](README.es.md)_
 
 **Atomic Redis spend cap for LLM APIs (OpenAI, Gemini, Anthropic, …).**
 
-> **See also:** [chatarmor](https://github.com/Rentheria/chatarmor) — conversational AI safety toolkit.
+> **See also:** [chatarmor](https://github.com/Rentheria/chatarmor) — conversational AI safety toolkit. [agent-context-atlas](https://github.com/Rentheria/agent-context-atlas) — wiki + typed graph + hybrid RAG for agent/machine context; complementary to spend/budget (context vs spend).
 > An `INCR` + `PEXPIRE` counter that runs **entirely inside a single Lua script**, so a bug or abuse can't quietly bleed money out of your AI API bill.
 
 - ⚛️ **Truly atomic.** Increment + TTL-arm in one Lua execution: two near-simultaneous requests near the limit **cannot both slip through**. A `GET` + `SET` can (explained below).
